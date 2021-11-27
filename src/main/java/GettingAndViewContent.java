@@ -1,40 +1,33 @@
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 public class GettingAndViewContent {
     public static void main(String[] args) throws IOException {
-        String ur = "https://m.business-gazeta.ru/news/530491";
+        String ur = "https://m.business-gazeta.ru/news/531026";
         Document doc = Jsoup.connect(ur).get();
-        StringBuilder sb = new StringBuilder();
-        String bodyContent = doc.select("div.articleBody").text();
-        int length = bodyContent.length();
+        String photo = null;
 
-        int start = 0;
-        int stop = 130;
+        String regex = "(.*<img src=\")(https://.*\\.jpg)(\" .*)";
+        String replaceTo = "$2";
 
-        String[] split = bodyContent.split(" ");
-        Arrays.stream(split).map(e-> e + " ").forEachOrdered(System.out::print);
+        String toPass1 = "Подписывайтесь и читайте";
+        String toPass2 = "Регистрируясь, вы соглашаетесь";
 
-
-
-  /*      for (; stop <= length; stop += 130) {
-            String textToAddSb = (bodyContent.substring(start, stop)).strip();
-//            String regex = "[\\.,?!;:-]";
-            String regex = ".";
-            sb.append("\n");
-            if (textToAddSb.startsWith(regex)) {
-                textToAddSb = textToAddSb.substring(2, textToAddSb.length());
-                sb.append(regex);
-            }
-            sb.append(textToAddSb);
-            start = stop;
-        }*/
+        String zagol = "h1.article__h1";
+        System.err.println(doc.select(zagol).text());
 
 
-        System.out.println(sb);
-
+        Elements ps = doc.select("p");
+        for (Element raw : ps) {
+            String text = raw.text();
+            if (text.contains("Фото: ")) {
+                photo = raw.toString().replaceFirst(regex, replaceTo);
+            } else if (text.startsWith(toPass1) || text.startsWith(toPass2)) continue;
+            else System.out.println(text);
+        }
     }
 }

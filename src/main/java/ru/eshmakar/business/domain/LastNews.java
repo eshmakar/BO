@@ -15,15 +15,18 @@ public class LastNews {
     private String title;
     private String comments;
     private String link;
+    private String numbersOfLinks;
+
 
     public LastNews() {
     }
 
-    public LastNews(String time, String title, String comments, String link) {
+    public LastNews(String time, String title, String comments, String link, String numbersOfLinks) {
         this.time = time;
         this.title = title;
         this.comments = comments;
         this.link = link;
+        this.numbersOfLinks = numbersOfLinks;
     }
 
     public String getTime() {
@@ -64,5 +67,13 @@ public class LastNews {
 
     public void setLink(String link) {
         this.link = link;
+    }
+
+    public String getNumbersOfLinks() {
+        return numbersOfLinks;
+    }
+
+    public void setNumbersOfLinks(String numbersOfLinks) {
+        this.numbersOfLinks = numbersOfLinks;
     }
 }

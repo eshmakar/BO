@@ -7,7 +7,8 @@
     <#list mainNews as main>
     <div class="card my-3">
         <div class="m-2">
-            <a href="${main.link}">${main.title}</a>
+            <a href="/${main.numbersOfLinks}">${main.title}</a>
+<#--            <a href="${main.link}">${main.title}</a>-->
             <span> - ${main.comments}</span>
         </div>
         </#list>
@@ -18,7 +19,8 @@
     <#list hotNews as hot>
     <div class="card my-3">
         <div class="m-2">
-            <a href="${hot.link}">${hot.title}</a>
+            <a href="/${hot.numbersOfLinks}">${hot.title}</a>
+<#--            <a href="${hot.link}">${hot.title}</a>-->
             <span> - ${hot.comments}</span>
         </div>
         </#list>
@@ -30,7 +32,8 @@
     <div class="card my-3">
         <div class="m-2">
             <span>${last.time}</span>
-            <a href="${last.link}">${last.title}</a>
+            <a href="/${last.numbersOfLinks}">${last.title}</a>
+<#--            <a href="${last.link}">${last.title}</a>-->
             <span> - ${last.comments}</span>
         </div>
         </#list>
