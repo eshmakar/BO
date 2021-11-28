@@ -2,20 +2,13 @@ package ru.eshmakar.business.domain;
 
 import org.springframework.stereotype.Component;
 
-import javax.persistence.*;
 import java.util.List;
 
 @Component
-@Entity
-@Table(name = "content")
 public class ContentNews {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String zagolovok;
     private String photo;
-
-    @ElementCollection
     private List<String> telo;
 
     public ContentNews() {

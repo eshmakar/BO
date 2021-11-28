@@ -15,15 +15,17 @@ public class HotNews {
     private String comments;
     private String link;
     private String numbersOfLinks;
+    private String photo;
 
     public HotNews() {
     }
 
-    public HotNews(String title, String comments, String link, String numbersOfLinks) {
+    public HotNews(String title, String comments, String link, String numbersOfLinks, String photo) {
         this.title = title;
         this.comments = comments;
         this.link = link;
         this.numbersOfLinks = numbersOfLinks;
+        this.photo = photo;
     }
 
     public Long getId() {
@@ -64,5 +66,13 @@ public class HotNews {
 
     public void setNumbersOfLinks(String numbersOfLinks) {
         this.numbersOfLinks = numbersOfLinks;
+    }
+
+    public String getPhoto() {
+        return photo;
+    }
+
+    public void setPhoto(String photo) {
+        this.photo = photo;
     }
 }

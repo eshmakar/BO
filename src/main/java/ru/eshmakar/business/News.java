@@ -10,13 +10,11 @@ import ru.eshmakar.business.domain.ContentNews;
 import ru.eshmakar.business.domain.HotNews;
 import ru.eshmakar.business.domain.LastNews;
 import ru.eshmakar.business.domain.MainNews;
-import ru.eshmakar.business.repo.ContentNewsRepo;
 import ru.eshmakar.business.repo.HotNewsRepo;
 import ru.eshmakar.business.repo.LastNewsRepo;
 import ru.eshmakar.business.repo.MainNewsRepo;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
@@ -26,7 +24,8 @@ public class News {
     String url = "https://m.business-gazeta.ru";
     String userAgent = "Mozilla/5.0 (Linux; Android 4.4.2; Nexus 4 Build/KOT49H) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.114 Mobile Safari/537.36";
     String regexForNumber = "(.*\\/)(\\d+)";
-    String replaceToNumber = "$2";
+    String regexFindPhoto = "(.*)(https://.*\\.jpg)(.*)";
+    String replaceTo = "$2";
 
     @Autowired
     private MainNewsRepo mainNewsRepo;
@@ -40,17 +39,18 @@ public class News {
     private ContentNews contentNews;
 
 
-    
     public void addMainNews() throws IOException {
         Document document = Jsoup.connect(url).userAgent(userAgent).get();
         String glavnayaTema = "h2.article-news__title";
         String comments = "div.article-news__comments";
         String linkGlavnaya = document.selectXpath("/html/body/div[1]/article/div/p/a").toString();
+        String selectPhoto = "a.article-news__image";
 
+        mainNews.setPhoto(document.selectFirst(selectPhoto).toString().replaceFirst(regexFindPhoto, replaceTo));
         mainNews.setTitle(document.selectFirst(glavnayaTema).text());
         mainNews.setComments(document.selectFirst(comments).text());
         mainNews.setLink(url + linkGlavnaya.substring(9, 24));
-        mainNews.setNumbersOfLinks(mainNews.getLink().replaceFirst(regexForNumber, replaceToNumber));
+        mainNews.setNumbersOfLinks(mainNews.getLink().replaceFirst(regexForNumber, replaceTo));
         mainNewsRepo.save(mainNews);
     }
 
@@ -59,20 +59,26 @@ public class News {
         Document document = Jsoup.connect(url).userAgent(userAgent).get();
         String hotNewsTitle = "a.hot-news__title";
         String commentsHotNews = "a.hot-news__comments";
+        String selectPhoto = "img.hot-news__img";
+
         int count = 0;
 
         ListIterator<Element> elementListIterator = document.select(hotNewsTitle).listIterator();
         ListIterator<Element> commentsIterator = document.select(commentsHotNews).listIterator();
+        ListIterator<Element> photosIterator = document.select(selectPhoto).listIterator();
 
-        while (elementListIterator.hasNext() && commentsIterator.hasNext()) {
+        while (elementListIterator.hasNext() && commentsIterator.hasNext() && photosIterator.hasNext()) {
             HotNews hotNews = new HotNews();
             count++;
             String linkHotNews = document.selectXpath("/html/body/div[1]/section/ul[1]/li[" + count + "]/div/div/a[1]").toString();
 
+
+            hotNews.setPhoto(photosIterator.next().toString().replaceFirst(regexFindPhoto, replaceTo));
+
             hotNews.setTitle(elementListIterator.next().text());
             hotNews.setComments(commentsIterator.next().text());
-            hotNews.setLink(url+linkHotNews.substring(9, 21));
-            hotNews.setNumbersOfLinks(hotNews.getLink().replaceFirst(regexForNumber, replaceToNumber));
+            hotNews.setLink(url + linkHotNews.substring(9, 21));
+            hotNews.setNumbersOfLinks(hotNews.getLink().replaceFirst(regexForNumber, replaceTo));
 
             hotNewsRepo.save(hotNews);
         }
@@ -98,21 +104,22 @@ public class News {
             lastNews.setTitle(titles.next().text());
             lastNews.setComments(comments.next().text());
             lastNews.setLink(url + links.substring(9, 21));
-            lastNews.setNumbersOfLinks(lastNews.getLink().replaceFirst(regexForNumber, replaceToNumber));
+            lastNews.setNumbersOfLinks(lastNews.getLink().replaceFirst(regexForNumber, replaceTo));
             lastNewsRepo.save(lastNews);
         }
     }
-    public void getContent(String u) throws IOException {
+
+    public void getContent(String u) {
         String urlContent = "https://m.business-gazeta.ru/news/" + u;
-        System.err.println(urlContent);
         List<String> telo = new LinkedList<>();
         String zagol = "h1.article__h1";
 
-        Document doc = Jsoup.connect(urlContent).get();
+        Document doc = null;
+        try {
+            doc = Jsoup.connect(urlContent).get();
+        } catch (IOException ignored) {
+        }
         contentNews.setZagolovok(doc.select(zagol).text());
-
-        String regex = "(.*)(https://.*\\.jpg)(.*)";
-        String replaceTo = "$2";
 
         String toPass1 = "Подписывайтесь и читайте";
         String toPass2 = "Регистрируясь, вы соглашаетесь";
@@ -122,10 +129,14 @@ public class News {
         for (Element raw : ps) {
             String text = raw.text();
             if (text.contains("Фото:")) {
-                contentNews.setPhoto(raw.toString().replaceFirst(regex, replaceTo));
+                contentNews.setPhoto(raw.toString().replaceFirst(regexFindPhoto, replaceTo));
             } else if (text.startsWith(toPass1) || text.startsWith(toPass2)) continue;
             else telo.add(text);
         }
         contentNews.setTelo(telo);
+    }
+
+    public void addTopNewsByComments(){
+
     }
 }

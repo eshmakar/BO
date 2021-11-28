@@ -15,15 +15,17 @@ public class MainNews {
     private String comments;
     private String link;
     private String numbersOfLinks;
+    private String photo;
 
     public MainNews() {
     }
 
-    public MainNews(String title, String comments, String link, String numbersOfLinks) {
+    public MainNews(String title, String comments, String link, String numbersOfLinks, String photo) {
         this.title = title;
         this.comments = comments;
         this.link = link;
         this.numbersOfLinks = numbersOfLinks;
+        this.photo = photo;
     }
 
     public Long getId() {
@@ -64,5 +66,13 @@ public class MainNews {
 
     public void setNumbersOfLinks(String numbersOfLinks) {
         this.numbersOfLinks = numbersOfLinks;
+    }
+
+    public String getPhoto() {
+        return photo;
+    }
+
+    public void setPhoto(String photo) {
+        this.photo = photo;
     }
 }

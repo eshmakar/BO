@@ -10,12 +10,13 @@ import ru.eshmakar.business.domain.ContentNews;
 import ru.eshmakar.business.domain.HotNews;
 import ru.eshmakar.business.domain.LastNews;
 import ru.eshmakar.business.domain.MainNews;
-import ru.eshmakar.business.repo.ContentNewsRepo;
 import ru.eshmakar.business.repo.HotNewsRepo;
 import ru.eshmakar.business.repo.LastNewsRepo;
 import ru.eshmakar.business.repo.MainNewsRepo;
 
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 
 @Controller
 public class MainController {
@@ -33,6 +34,7 @@ public class MainController {
 
     @Autowired
     private ContentNews contentNews;
+
     @GetMapping("/")
     public String getMainPage(Model model) throws IOException {
         mainNewsRepo.deleteAll();
@@ -47,7 +49,7 @@ public class MainController {
         mainNews = mainNewsRepo.findAll();
 
         Iterable<HotNews> hotNews;
-        hotNews=hotNewsRepo.findAll();
+        hotNews = hotNewsRepo.findAll();
 
         Iterable<LastNews> lastNews;
         lastNews = lastNewsRepo.findAll();
@@ -58,21 +60,27 @@ public class MainController {
         return "index";
     }
 
-  /*  @GetMapping("/{url}")
-    public String getContentPage(Model model, @PathVariable String url) throws IOException {
-        news.getContent(url);
-        model.addAttribute("contentFromUrl", contentNewsRepo.findByUrl(url));
-        return "content";
-    }*/
-
     @GetMapping("/{u}")
-    public String getContentPage(Model model, @PathVariable String u) throws IOException {
-        System.out.println(u);
-        news.getContent(u);
-        System.out.println(contentNews.getId());
+    public String getContentPage(Model model, @PathVariable String u){
+        contentNews.setZagolovok(null);
+        contentNews.setTelo(null);
+        contentNews.setPhoto(null);
+        contentNews.setId(null);
+
+        try {
+            news.getContent(u);
+        }catch (Exception e){}
 
         model.addAttribute("contentFromUrl", contentNews);
         model.addAttribute("telo", contentNews.getTelo());
         return "content";
+    }
+
+    @GetMapping("/p")
+    public String populars(Model model) {
+        List<LastNews> lasts = lastNewsRepo.getTop10ByOrderByCommentsDesc();
+//        List<LastNews> lasts = lastNewsRepo.getTopComments();
+        model.addAttribute("tops", lasts);
+        return "top";
     }
 }

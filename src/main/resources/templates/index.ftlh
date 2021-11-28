@@ -1,39 +1,47 @@
 <div>
     <title>Легкая копия газеты бизнес онлайн</title>
     <h1>Легкая копия газеты бизнес онлайн</h1>
+    <style>
+        a {
+            text-decoration: none; /* Отменяем подчеркивание у ссылки */
+            color: #000 !important; /* Отменяем цвет у ссылки */
+        }
+    </style>
 </div>
 <div>
-    <h2>Главная тема</h2>
+    <#--    Главная тема-->
     <#list mainNews as main>
     <div class="card my-3">
         <div class="m-2">
-            <a href="/${main.numbersOfLinks}">${main.title}</a>
-<#--            <a href="${main.link}">${main.title}</a>-->
-            <span> - ${main.comments}</span>
+            <img src="${main.photo}" width="400"/>
+            <h2><a href="/${main.numbersOfLinks}">${main.title}</a></h2>
+            <h4>${main.comments}</h4>
         </div>
         </#list>
     </div>
 </div>
 <div>
-    <h3>Горячие темы</h3>
+    <#--    <h3>Горячие темы</h3>-->
     <#list hotNews as hot>
     <div class="card my-3">
         <div class="m-2">
+            <#if hot.photo??>
+                <img src="${hot.photo}" width="100">
+            </#if>
             <a href="/${hot.numbersOfLinks}">${hot.title}</a>
-<#--            <a href="${hot.link}">${hot.title}</a>-->
             <span> - ${hot.comments}</span>
         </div>
         </#list>
     </div>
 </div>
 <div>
-    <h3>Последние темы</h3>
+    <br><br><br>
+    <#--    <h3>Последние темы</h3>-->
     <#list lastNews as last>
     <div class="card my-3">
         <div class="m-2">
             <span>${last.time}</span>
             <a href="/${last.numbersOfLinks}">${last.title}</a>
-<#--            <a href="${last.link}">${last.title}</a>-->
             <span> - ${last.comments}</span>
         </div>
         </#list>

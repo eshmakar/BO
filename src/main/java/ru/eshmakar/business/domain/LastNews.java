@@ -13,7 +13,7 @@ public class LastNews {
     private Long id;
     private String time;
     private String title;
-    private String comments;
+    private Integer comments;
     private String link;
     private String numbersOfLinks;
 
@@ -21,7 +21,7 @@ public class LastNews {
     public LastNews() {
     }
 
-    public LastNews(String time, String title, String comments, String link, String numbersOfLinks) {
+    public LastNews(String time, String title, Integer comments, String link, String numbersOfLinks) {
         this.time = time;
         this.title = title;
         this.comments = comments;
@@ -53,12 +53,12 @@ public class LastNews {
         this.title = title;
     }
 
-    public String getComments() {
+    public Integer getComments() {
         return comments;
     }
 
     public void setComments(String comments) {
-        this.comments = comments;
+        this.comments = Integer.valueOf(comments);
     }
 
     public String getLink() {
