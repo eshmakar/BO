@@ -76,10 +76,9 @@ public class MainController {
         return "content";
     }
 
-    @GetMapping("/p")
+    @GetMapping("/top")
     public String populars(Model model) {
         List<LastNews> lasts = lastNewsRepo.getTop10ByOrderByCommentsDesc();
-//        List<LastNews> lasts = lastNewsRepo.getTopComments();
         model.addAttribute("tops", lasts);
         return "top";
     }
