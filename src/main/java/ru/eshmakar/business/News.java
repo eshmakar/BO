@@ -18,13 +18,14 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Objects;
 
 @Component
 public class News {
     String url = "https://m.business-gazeta.ru";
     String userAgent = "Mozilla/5.0 (Linux; Android 4.4.2; Nexus 4 Build/KOT49H) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.114 Mobile Safari/537.36";
     String regexForNumber = "(.*\\/)(\\d+)";
-    String regexFindPhoto = "(.*)(https://.*\\.jpg)(.*)";
+    String regexFindPhoto = "(.*)(https://.*\\.jp.?g)(.*)";
     String replaceTo = "$2";
 
     @Autowired
@@ -46,9 +47,9 @@ public class News {
         String linkGlavnaya = document.selectXpath("/html/body/div[1]/article/div/p/a").toString();
         String selectPhoto = "a.article-news__image";
 
-        mainNews.setPhoto(document.selectFirst(selectPhoto).toString().replaceFirst(regexFindPhoto, replaceTo));
-        mainNews.setTitle(document.selectFirst(glavnayaTema).text());
-        mainNews.setComments(document.selectFirst(comments).text());
+        mainNews.setPhoto(Objects.requireNonNull(document.selectFirst(selectPhoto)).toString().replaceFirst(regexFindPhoto, replaceTo));
+        mainNews.setTitle(Objects.requireNonNull(document.selectFirst(glavnayaTema)).text());
+        mainNews.setComments(Objects.requireNonNull(document.selectFirst(comments)).text().substring(12));
         mainNews.setLink(url + linkGlavnaya.substring(9, 24));
         mainNews.setNumbersOfLinks(mainNews.getLink().replaceFirst(regexForNumber, replaceTo));
         mainNewsRepo.save(mainNews);
@@ -117,26 +118,47 @@ public class News {
         Document doc = null;
         try {
             doc = Jsoup.connect(urlContent).get();
+            contentNews.setZagolovok(doc.select(zagol).text());
         } catch (IOException ignored) {
         }
-        contentNews.setZagolovok(doc.select(zagol).text());
 
         String toPass1 = "Подписывайтесь и читайте";
         String toPass2 = "Регистрируясь, вы соглашаетесь";
 
-
+       /* int count = 0;
         Elements ps = doc.select("p");
         for (Element raw : ps) {
+        count++;
             String text = raw.text();
-            if (text.contains("Фото:")) {
+            System.out.println(count);
+            System.err.println(raw);
+            System.out.println();
+            if (raw.toString().contains("jpg") || raw.toString().contains("jpeg")) {
                 contentNews.setPhoto(raw.toString().replaceFirst(regexFindPhoto, replaceTo));
-            } else if (text.startsWith(toPass1) || text.startsWith(toPass2)) continue;
+            }
+
+            if (text.startsWith(toPass1) || text.startsWith(toPass2)) continue;
             else telo.add(text);
+        }
+        contentNews.setTelo(telo);*/
+
+        if (doc != null) {
+            for (Element element : doc.select("p")) {
+                if (element != null) {
+                    if (element.toString().contains("jpg") || element.toString().contains("jpeg"))
+                        telo.add(element.toString().replaceAll(regexFindPhoto, replaceTo));
+
+                    String text2 = element.text();
+                    if (text2.startsWith(toPass1) || text2.startsWith(toPass2)) continue;
+
+                    telo.add(text2);
+                }
+            }
         }
         contentNews.setTelo(telo);
     }
 
-    public void addTopNewsByComments(){
+    public void addTopNewsByComments() {
 
     }
 }

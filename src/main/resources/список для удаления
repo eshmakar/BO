@@ -1,0 +1,27 @@
+    <div class="popover__wrap" alt="Добавить материал в закладки">
+                <div class="popover__text">
+                    <div>
+                        Сохраняйте новости, статьи, комментарии чтобы прочитать их позже
+                    </div>
+                </div>
+                <div class="popover__buttons">
+                    <button class="button" data-modal="#auth" data-toggle="modal">Войти</button>
+                </div>
+            </div>
+
+
+
+
+<div class="show_full" title="Посмотреть весь комментарий">
+                Читать далее
+            </div><a href="#" class="comments-comment__answer" data-article-id="534342" data-comment-id="10591174">Ответить</a>
+
+
+
+
+
+
+
+<div class="comments-comment__etc">                <div class="comments-comment__dots"><span class="icon-dots js-comment-dots"></span>                    <div class="comments-comment__popover">                        <ul class="comments-comment__popover-list">                            <li class="comments-comment__popover-item"><span                                    data-clipboard-text="https://m.business-gazeta.ru/article/534342#comment10592626"                                    class="js-copy-comment-link comments-comment__to-comment">ссылка на комментарий</span>                            </li>                        </ul>                    </div>                </div>            </div>
+
+

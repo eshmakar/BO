@@ -1,21 +1,18 @@
-<div>
-    <title>Популярные статьи</title>
-    <h1>Популярные статьи</h1>
-    <style>
-        a {
-            text-decoration: none; /* Отменяем подчеркивание у ссылки */
-            color: #000 !important; /* Отменяем цвет у ссылки */
-        }
-    </style>
-</div>
-<div>
-    <#--    Главная тема-->
-    <#list tops as top>
-    <div class="card my-3">
-        <div class="m-2">
-            <span><a href="/${top.numbersOfLinks}">${top.title}</a></span>
-            <span> - ${top.comments}</span>
-        </div>
+<#import "parts/common.ftlh" as c> <#-- импортируем файл common.ftlh и назначаем алиас с-->
+<@c.page>
+
+    <div>
+        <title>Популярные статьи</title>
+        <h3>Популярные статьи</h3>
+    </div>
+    <div>
+        <#--    Главная тема-->
+        <#list tops as top>
+            <div class="card my-3">
+                <div class="m-2">
+                    <span><a href="/${top.numbersOfLinks}">${top.title}</a> <a href="google.com"> <span class="badge rounded-pill bg-danger">${top.comments}</a></span></span>
+                </div>
+            </div>
         </#list>
     </div>
-</div>
+</@c.page>

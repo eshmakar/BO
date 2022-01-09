@@ -4,8 +4,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class StartApplication {
+public class BusinessOnlineStart {
     public static void main(String[] args) {
-        SpringApplication.run(StartApplication.class, args);
+        SpringApplication.run(BusinessOnlineStart.class, args);
     }
 }

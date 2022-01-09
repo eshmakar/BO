@@ -15,7 +15,6 @@ import ru.eshmakar.business.repo.LastNewsRepo;
 import ru.eshmakar.business.repo.MainNewsRepo;
 
 import java.io.IOException;
-import java.util.LinkedList;
 import java.util.List;
 
 @Controller
@@ -69,10 +68,11 @@ public class MainController {
 
         try {
             news.getContent(u);
-        }catch (Exception e){}
+        }catch (Exception e){
+            e.printStackTrace();
+        }
 
-        model.addAttribute("contentFromUrl", contentNews);
-        model.addAttribute("telo", contentNews.getTelo());
+        model.addAttribute("content", contentNews);
         return "content";
     }
 

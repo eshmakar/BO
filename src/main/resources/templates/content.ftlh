@@ -1,31 +1,22 @@
-<style>
-    a {
-        text-decoration: none; /* Отменяем подчеркивание у ссылки */
-        color: #000 !important; /* Отменяем цвет у ссылки */
-    }
-</style>
-<div xmlns="http://www.w3.org/1999/html">
-    <div class="card my-3">
-        <div class="m-2">
-            <#if contentFromUrl.zagolovok??>
-                <h2><span>${contentFromUrl.zagolovok}</span></h2>
-                <title>${contentFromUrl.zagolovok}</title>
-            </#if>
-            <div>
-                <#if contentFromUrl.photo??>
-                    <img src="${contentFromUrl.photo}" width="350"/>
+<#import "parts/common.ftlh" as c>
+<@c.page>
+    <div>
+        <#if content.zagolovok??>
+            <h4>${content.zagolovok}</h4>
+            <title>${content.zagolovok}</title>
+        </#if>
+    </div>
+    <br>
+    <div>
+        <#if content.telo??>
+            <#list content.telo as t>
+                <br>
+                <#if t?starts_with("http")>
+                    <img src="${t}" width="350"/>
+                <#else>
+                    <span>${t}</span><br>
                 </#if>
-            </div>
-        </div>
+            </#list>
+        </#if>
     </div>
-</div>
-<div>
-    <#list telo as t>
-    <div class="card my-3">
-        <div class="m-2">
-                <span>${t}</span>
-            <br><br>
-        </div>
-        </#list>
-    </div>
-</div>
+</@c.page>
