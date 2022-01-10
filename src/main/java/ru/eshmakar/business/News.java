@@ -6,10 +6,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import ru.eshmakar.business.domain.ContentNews;
-import ru.eshmakar.business.domain.HotNews;
-import ru.eshmakar.business.domain.LastNews;
-import ru.eshmakar.business.domain.MainNews;
+import ru.eshmakar.business.domain.*;
 import ru.eshmakar.business.repo.HotNewsRepo;
 import ru.eshmakar.business.repo.LastNewsRepo;
 import ru.eshmakar.business.repo.MainNewsRepo;
@@ -53,6 +50,7 @@ public class News {
         mainNews.setLink(url + linkGlavnaya.substring(9, 24));
         mainNews.setNumbersOfLinks(mainNews.getLink().replaceFirst(regexForNumber, replaceTo));
         mainNewsRepo.save(mainNews);
+
     }
 
 
@@ -82,6 +80,7 @@ public class News {
             hotNews.setNumbersOfLinks(hotNews.getLink().replaceFirst(regexForNumber, replaceTo));
 
             hotNewsRepo.save(hotNews);
+
         }
     }
 
@@ -103,10 +102,11 @@ public class News {
 
             lastNews.setTime(times.next().text());
             lastNews.setTitle(titles.next().text());
-            lastNews.setComments(comments.next().text());
+            lastNews.setComments(Integer.valueOf(comments.next().text()));
             lastNews.setLink(url + links.substring(9, 21));
             lastNews.setNumbersOfLinks(lastNews.getLink().replaceFirst(regexForNumber, replaceTo));
             lastNewsRepo.save(lastNews);
+
         }
     }
 
@@ -125,28 +125,24 @@ public class News {
         String toPass1 = "Подписывайтесь и читайте";
         String toPass2 = "Регистрируясь, вы соглашаетесь";
 
-       /* int count = 0;
-        Elements ps = doc.select("p");
-        for (Element raw : ps) {
-        count++;
-            String text = raw.text();
-            System.out.println(count);
-            System.err.println(raw);
-            System.out.println();
-            if (raw.toString().contains("jpg") || raw.toString().contains("jpeg")) {
-                contentNews.setPhoto(raw.toString().replaceFirst(regexFindPhoto, replaceTo));
-            }
+        String videoLinkStart = "https://vk.com/video?z=video";
+        String findVideoIdHash = "(.*oid=)(-\\d+)(.*;id=)(\\d+)(.*)";
+        String replaceVideo = "$2_$4";
 
-            if (text.startsWith(toPass1) || text.startsWith(toPass2)) continue;
-            else telo.add(text);
-        }
-        contentNews.setTelo(telo);*/
-
+        int count = 0;
         if (doc != null) {
             for (Element element : doc.select("p")) {
+                count++;
                 if (element != null) {
-                    if (element.toString().contains("jpg") || element.toString().contains("jpeg"))
-                        telo.add(element.toString().replaceAll(regexFindPhoto, replaceTo));
+                    if (element.toString().contains("jpg") || element.toString().contains("jpeg")) {
+                        String photo = element.toString().replaceAll("\n","").replaceAll(regexFindPhoto, replaceTo);
+                        telo.add(photo);
+                    }
+
+                    if (element.toString().contains("<iframe")) {
+                        String video = element.toString().replaceAll(findVideoIdHash, replaceVideo);
+                        telo.add(videoLinkStart + video);
+                    }
 
                     String text2 = element.text();
                     if (text2.startsWith(toPass1) || text2.startsWith(toPass2)) continue;

@@ -78,7 +78,7 @@ public class MainController {
 
     @GetMapping("/top")
     public String populars(Model model) {
-        List<LastNews> lasts = lastNewsRepo.getTop10ByOrderByCommentsDesc();
+        List<LastNews> lasts = lastNewsRepo.getTop30ByOrderByCommentsDesc();
         model.addAttribute("tops", lasts);
         return "top";
     }

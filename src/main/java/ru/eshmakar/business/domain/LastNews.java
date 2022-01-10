@@ -53,14 +53,6 @@ public class LastNews {
         this.title = title;
     }
 
-    public Integer getComments() {
-        return comments;
-    }
-
-    public void setComments(String comments) {
-        this.comments = Integer.valueOf(comments);
-    }
-
     public String getLink() {
         return link;
     }
@@ -75,5 +67,13 @@ public class LastNews {
 
     public void setNumbersOfLinks(String numbersOfLinks) {
         this.numbersOfLinks = numbersOfLinks;
+    }
+
+    public Integer getComments() {
+        return comments;
+    }
+
+    public void setComments(Integer comments) {
+        this.comments = comments;
     }
 }
