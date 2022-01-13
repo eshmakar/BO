@@ -34,15 +34,20 @@ public class MainController {
     @Autowired
     private ContentNews contentNews;
 
+
     @GetMapping("/")
-    public String getMainPage(Model model) throws IOException {
+    public String getMainPage(Model model) {
         mainNewsRepo.deleteAll();
         hotNewsRepo.deleteAll();
         lastNewsRepo.deleteAll();
 
-        news.addMainNews();
-        news.addHotNews();
-        news.addLastNews();
+        try {
+            news.addMainNews();
+            news.addHotNews();
+            news.addLastNews();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         Iterable<MainNews> mainNews;
         mainNews = mainNewsRepo.findAll();
@@ -59,27 +64,69 @@ public class MainController {
         return "index";
     }
 
-    @GetMapping("/{u}")
-    public String getContentPage(Model model, @PathVariable String u){
+ /*   @GetMapping("{numbers}")
+    public String getContentPage(Model model, @PathVariable String numbers) throws IOException {
+
+        System.err.println("This is number: " + numbers);
+
         contentNews.setZagolovok(null);
         contentNews.setTelo(null);
         contentNews.setPhoto(null);
         contentNews.setId(null);
 
         try {
-            news.getContent(u);
-        }catch (Exception e){
-            e.printStackTrace();
+            news.getContent(numbers);
+        } catch (Exception e) {
+            System.err.println("Неправильный номер: " + numbers);
+//            e.printStackTrace();
         }
 
+        news.getComments(numbers);//добавил все комменты на файл
+
         model.addAttribute("content", contentNews);
+
+        return "content";
+    }*/
+
+
+       @GetMapping(value = "/{numbers}")
+    public String getContentPage(Model model, @PathVariable String numbers) throws IOException {
+
+        System.err.println("This is number: " + numbers);
+
+        contentNews.setZagolovok(null);
+        contentNews.setTelo(null);
+        contentNews.setCommentsCount(null);
+        contentNews.setId(null);
+
+        try {
+            news.getContent(numbers);
+        } catch (Exception e) {
+            System.err.println("Неправильный номер: " + numbers);
+//            e.printStackTrace();
+        }
+
+        news.getComments(numbers);//добавил все комменты на файл
+
+        model.addAttribute("content", contentNews);
+        model.addAttribute("number", numbers);
+
         return "content";
     }
 
-    @GetMapping("/top")
+
+
+
+
+    @GetMapping("top")
     public String populars(Model model) {
         List<LastNews> lasts = lastNewsRepo.getTop30ByOrderByCommentsDesc();
         model.addAttribute("tops", lasts);
         return "top";
+    }
+
+    @GetMapping("comments")
+    public String getHtml(){
+        return "comments";
     }
 }

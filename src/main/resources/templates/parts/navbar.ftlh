@@ -4,6 +4,6 @@
         <a class="navbar-brand" href="/">
             <img src="https://beta-cdn.business-online.ru/mobile/img/logo.svg" alt="" height="24">
         </a>
-        <a class="navbar-brand" href="/top"><span>Популярные</span></a>
+        <a class="navbar-brand" href="/top"><span><b>ГОРЯЧИЕ</b></span></a>
     </div>
 </nav>

@@ -8,15 +8,15 @@ import java.util.List;
 public class ContentNews {
     private Long id;
     private String zagolovok;
-    private String photo;
+    private String commentsCount;
     private List<String> telo;
 
     public ContentNews() {
     }
 
-    public ContentNews(String zagolovok, String photo, List<String> telo) {
+    public ContentNews(String zagolovok, String commentsCount, List<String> telo) {
         this.zagolovok = zagolovok;
-        this.photo = photo;
+        this.commentsCount = commentsCount;
         this.telo = telo;
     }
 
@@ -44,11 +44,11 @@ public class ContentNews {
         this.telo = telo;
     }
 
-    public String getPhoto() {
-        return photo;
+    public String getCommentsCount() {
+        return commentsCount;
     }
 
-    public void setPhoto(String photo) {
-        this.photo = photo;
+    public void setCommentsCount(String commentsCount) {
+        this.commentsCount = commentsCount;
     }
 }

@@ -6,11 +6,16 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import ru.eshmakar.business.domain.*;
+import ru.eshmakar.business.domain.ContentNews;
+import ru.eshmakar.business.domain.HotNews;
+import ru.eshmakar.business.domain.LastNews;
+import ru.eshmakar.business.domain.MainNews;
 import ru.eshmakar.business.repo.HotNewsRepo;
 import ru.eshmakar.business.repo.LastNewsRepo;
 import ru.eshmakar.business.repo.MainNewsRepo;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
@@ -111,13 +116,22 @@ public class News {
     }
 
     public void getContent(String u) {
-        String urlContent = "https://m.business-gazeta.ru/news/" + u;
+        System.err.println("На getConten пришел номер: " + u);
+        String urlContent = "";
+        if (!u.contains("favicon.ico")) {
+//            urlContent = "https://m.business-gazeta.ru/article/" + u;
+            urlContent = "https://m.business-gazeta.ru/news/" + u;
+        }
+
         List<String> telo = new LinkedList<>();
         String zagol = "h1.article__h1";
+        String getCommentsCount = "span.article__more-count";
+
 
         Document doc = null;
         try {
             doc = Jsoup.connect(urlContent).get();
+            contentNews.setCommentsCount(doc.select(getCommentsCount).text());
             contentNews.setZagolovok(doc.select(zagol).text());
         } catch (IOException ignored) {
         }
@@ -129,13 +143,11 @@ public class News {
         String findVideoIdHash = "(.*oid=)(-\\d+)(.*;id=)(\\d+)(.*)";
         String replaceVideo = "$2_$4";
 
-        int count = 0;
         if (doc != null) {
             for (Element element : doc.select("p")) {
-                count++;
                 if (element != null) {
                     if (element.toString().contains("jpg") || element.toString().contains("jpeg")) {
-                        String photo = element.toString().replaceAll("\n","").replaceAll(regexFindPhoto, replaceTo);
+                        String photo = element.toString().replaceAll("\n", "").replaceAll(regexFindPhoto, replaceTo);
                         telo.add(photo);
                     }
 
@@ -154,7 +166,62 @@ public class News {
         contentNews.setTelo(telo);
     }
 
-    public void addTopNewsByComments() {
+    public void getComments(String url) throws IOException {
+        BufferedWriter writer = new BufferedWriter(new FileWriter("Z://comments.ftlh"));
+        String urlContent = "";
+        if (!url.equals("favicon.ico")) {
+            urlContent = "https://m.business-gazeta.ru/news/" + url;
+//            urlContent = "https://m.business-gazeta.ru/article/" + url;
+        } else {
+        }
 
+        Document document = null;
+        try {
+            System.err.println("MyURL: " + urlContent);
+            document = Jsoup.connect(urlContent).get();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        String divs = "<div>\n</div>";
+        String popovers = " <div class=\"popover popover_favorite\"></div>";
+        String bookmarks = "<span class=\"comments-comment__image\"><img class=\"comments-comment__img lazyload\" data-src=\"/img/icons/anonimus.svg\" alt=\"\"></span>";
+        String plus = "(.*)( \\d+ )(</span></span>)";
+
+        if (document != null) {
+            Elements selects = document.select("ul.comments-list");
+            for (Element element : selects) {
+                element.select("a").remove();
+                element.select("div.popover__wrap").remove();
+                element.select("div.comments-comment__etc").remove();
+                element.select("div.show_full").remove();
+            }
+
+            writer.write("<#import \"parts/common.ftlh\" as c>\n" +
+                    "<@c.page>");
+
+            writer.write(selects.html()
+                    .replace(divs,"")
+                    .replace(popovers,"")
+                    .replace(bookmarks, "")
+                    .replaceAll(plus,"$2")
+                    .replace("\n","")
+                    .replaceAll(" {2,}"," ")
+                    .replace("<div class=\"comments-comment__bookmarks\"> </div>","")
+                    .replace("<span class=\"comments-comment__image\"><img class=\"comments-comment__img lazyload\" data-src=\"https://beta-cdn.business-online.ru/img/icons/anonimus.svg\" alt=\"\"></span>","")
+                    .replace("<div class=\"comments-comment__avatar\"> </div>","")
+                    .replaceAll("(<div class=\"comments-comment__rating\"> <div class=\"voting\" data-rating=\"\\d+\" data-comment-id=\"\\d+\" data-article-id=\"\\d+\">)( \\d+ )(</div> </div>)","<div>$2</div>")
+                    .replace(" class=\"comments-comment comments-comment_bad\"","")
+                    .replace(" <div class=\"comments-comment__author\"> <span class=\"comments-comment__name\">Анонимно</span> </div>", "<b>Анонимно</b>")
+
+
+            );
+
+            writer.write("</@c.page>");
+            writer.close();
+
+        } else {
+            System.out.println("document is null");
+        }
     }
 }
