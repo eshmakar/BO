@@ -20,6 +20,7 @@
                 color: #000 !important; /* Отменяем цвет у ссылки */
             }
         </style>
+        <script defer src="https://cdnjs.cloudflare.com/ajax/libs/turbolinks/5.2.0/turbolinks.js"></script> <#--супер ускорение загрузки страниц, турболинк-->
     </head>
     <body>
     <div class="container mt-2"> <#--для выравнивания контента, чтобы вплотную не прикосался к левому краю экрана mt-2 означает, сколько отсупов сделать после-->
