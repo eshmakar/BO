@@ -1,6 +1,8 @@
 package ru.eshmakar.business.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,6 +19,7 @@ import ru.eshmakar.business.repo.MainNewsRepo;
 import java.io.IOException;
 import java.util.List;
 
+@EnableScheduling
 @Controller
 public class MainController {
     @Autowired
@@ -37,18 +40,6 @@ public class MainController {
 
     @GetMapping("/")
     public String getMainPage(Model model) {
-        mainNewsRepo.deleteAll();
-        hotNewsRepo.deleteAll();
-        lastNewsRepo.deleteAll();
-
-        try {
-            news.addMainNews();
-            news.addHotNews();
-            news.addLastNews();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         Iterable<MainNews> mainNews;
         mainNews = mainNewsRepo.findAll();
 
@@ -64,58 +55,29 @@ public class MainController {
         return "index";
     }
 
- /*   @GetMapping("{numbers}")
+    @GetMapping(value = "/{numbers}")
     public String getContentPage(Model model, @PathVariable String numbers) throws IOException {
+        if (!numbers.equals("favicon.ico")) {
+            contentNews.setZagolovok(null);
+            contentNews.setTelo(null);
+            contentNews.setCommentsCount(null);
+            contentNews.setId(null);
 
-        System.err.println("This is number: " + numbers);
-
-        contentNews.setZagolovok(null);
-        contentNews.setTelo(null);
-        contentNews.setPhoto(null);
-        contentNews.setId(null);
-
-        try {
-            news.getContent(numbers);
-        } catch (Exception e) {
-            System.err.println("Неправильный номер: " + numbers);
+            try {
+                news.getContent(numbers);
+            } catch (Exception e) {
+                System.err.println("Неправильный номер: " + numbers);
 //            e.printStackTrace();
+            }
+
+            news.getComments(numbers);//добавил все комменты на файл
+
+            model.addAttribute("content", contentNews);
+            model.addAttribute("number", numbers);
         }
-
-        news.getComments(numbers);//добавил все комменты на файл
-
-        model.addAttribute("content", contentNews);
-
         return "content";
-    }*/
 
-
-       @GetMapping(value = "/{numbers}")
-    public String getContentPage(Model model, @PathVariable String numbers) throws IOException {
-
-        System.err.println("This is number: " + numbers);
-
-        contentNews.setZagolovok(null);
-        contentNews.setTelo(null);
-        contentNews.setCommentsCount(null);
-        contentNews.setId(null);
-
-        try {
-            news.getContent(numbers);
-        } catch (Exception e) {
-            System.err.println("Неправильный номер: " + numbers);
-//            e.printStackTrace();
-        }
-
-        news.getComments(numbers);//добавил все комменты на файл
-
-        model.addAttribute("content", contentNews);
-        model.addAttribute("number", numbers);
-
-        return "content";
     }
-
-
-
 
 
     @GetMapping("top")
@@ -126,7 +88,24 @@ public class MainController {
     }
 
     @GetMapping("comments")
-    public String getHtml(){
+    public String getHtml() {
         return "comments";
+    }
+
+    @Scheduled(fixedDelay=60_000) //60 сек
+    public void doSomething() {
+        if (mainNewsRepo != null) {
+            mainNewsRepo.deleteAll();
+            hotNewsRepo.deleteAll();
+            lastNewsRepo.deleteAll();
+        }
+        try {
+            news.addMainNews();
+            news.addHotNews();
+            news.addLastNews();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

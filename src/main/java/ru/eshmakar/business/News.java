@@ -26,7 +26,7 @@ import java.util.Objects;
 public class News {
     String url = "https://m.business-gazeta.ru";
     String userAgent = "Mozilla/5.0 (Linux; Android 4.4.2; Nexus 4 Build/KOT49H) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.114 Mobile Safari/537.36";
-    String regexForNumber = "(.*\\/)(\\d+)";
+    String regexForNumber = "(.*business-gazeta.ru/)(.*/\\d+)";
     String regexFindPhoto = "(.*)(https://.*\\.jp.?g)(.*)";
     String replaceTo = "$2";
 
@@ -53,9 +53,8 @@ public class News {
         mainNews.setTitle(Objects.requireNonNull(document.selectFirst(glavnayaTema)).text());
         mainNews.setComments(Objects.requireNonNull(document.selectFirst(comments)).text().substring(12));
         mainNews.setLink(url + linkGlavnaya.substring(9, 24));
-        mainNews.setNumbersOfLinks(mainNews.getLink().replaceFirst(regexForNumber, replaceTo));
+        mainNews.setNumbersOfLinks(mainNews.getLink().replaceFirst(regexForNumber, replaceTo).replace("/", "_"));
         mainNewsRepo.save(mainNews);
-
     }
 
 
@@ -75,15 +74,13 @@ public class News {
             HotNews hotNews = new HotNews();
             count++;
             String linkHotNews = document.selectXpath("/html/body/div[1]/section/ul[1]/li[" + count + "]/div/div/a[1]").toString();
-
-
             hotNews.setPhoto(photosIterator.next().toString().replaceFirst(regexFindPhoto, replaceTo));
-
             hotNews.setTitle(elementListIterator.next().text());
             hotNews.setComments(commentsIterator.next().text());
-            hotNews.setLink(url + linkHotNews.substring(9, 21));
-            hotNews.setNumbersOfLinks(hotNews.getLink().replaceFirst(regexForNumber, replaceTo));
 
+
+            hotNews.setLink(url + linkHotNews.substring(9, 21));
+            hotNews.setNumbersOfLinks(hotNews.getLink().replaceFirst(regexForNumber, replaceTo).replace("/", "_"));
             hotNewsRepo.save(hotNews);
 
         }
@@ -109,19 +106,15 @@ public class News {
             lastNews.setTitle(titles.next().text());
             lastNews.setComments(Integer.valueOf(comments.next().text()));
             lastNews.setLink(url + links.substring(9, 21));
-            lastNews.setNumbersOfLinks(lastNews.getLink().replaceFirst(regexForNumber, replaceTo));
+            lastNews.setNumbersOfLinks(lastNews.getLink().replaceFirst(regexForNumber, replaceTo).replace("/", "_"));
+
             lastNewsRepo.save(lastNews);
 
         }
     }
 
-    public void getContent(String u) {
-        System.err.println("На getConten пришел номер: " + u);
-        String urlContent = "";
-        if (!u.contains("favicon.ico")) {
-//            urlContent = "https://m.business-gazeta.ru/article/" + u;
-            urlContent = "https://m.business-gazeta.ru/news/" + u;
-        }
+    public void getContent(String urlContent) {
+        String url = "https://m.business-gazeta.ru/" + urlContent.replace("_", "/");
 
         List<String> telo = new LinkedList<>();
         String zagol = "h1.article__h1";
@@ -130,7 +123,7 @@ public class News {
 
         Document doc = null;
         try {
-            doc = Jsoup.connect(urlContent).get();
+            doc = Jsoup.connect(url).get();
             contentNews.setCommentsCount(doc.select(getCommentsCount).text());
             contentNews.setZagolovok(doc.select(zagol).text());
         } catch (IOException ignored) {
@@ -166,19 +159,13 @@ public class News {
         contentNews.setTelo(telo);
     }
 
-    public void getComments(String url) throws IOException {
+    public void getComments(String urlContent) throws IOException {
+        String url = "https://m.business-gazeta.ru/" + urlContent.replace("_", "/");
         BufferedWriter writer = new BufferedWriter(new FileWriter("Z://comments.ftlh"));
-        String urlContent = "";
-        if (!url.equals("favicon.ico")) {
-            urlContent = "https://m.business-gazeta.ru/news/" + url;
-//            urlContent = "https://m.business-gazeta.ru/article/" + url;
-        } else {
-        }
 
         Document document = null;
         try {
-            System.err.println("MyURL: " + urlContent);
-            document = Jsoup.connect(urlContent).get();
+            document = Jsoup.connect(url).get();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -201,17 +188,17 @@ public class News {
                     "<@c.page>");
 
             writer.write(selects.html()
-                    .replace(divs,"")
-                    .replace(popovers,"")
+                    .replace(divs, "")
+                    .replace(popovers, "")
                     .replace(bookmarks, "")
-                    .replaceAll(plus,"$2")
-                    .replace("\n","")
-                    .replaceAll(" {2,}"," ")
-                    .replace("<div class=\"comments-comment__bookmarks\"> </div>","")
-                    .replace("<span class=\"comments-comment__image\"><img class=\"comments-comment__img lazyload\" data-src=\"https://beta-cdn.business-online.ru/img/icons/anonimus.svg\" alt=\"\"></span>","")
-                    .replace("<div class=\"comments-comment__avatar\"> </div>","")
-                    .replaceAll("(<div class=\"comments-comment__rating\"> <div class=\"voting\" data-rating=\"\\d+\" data-comment-id=\"\\d+\" data-article-id=\"\\d+\">)( \\d+ )(</div> </div>)","<div>$2</div>")
-                    .replace(" class=\"comments-comment comments-comment_bad\"","")
+                    .replaceAll(plus, "$2")
+                    .replace("\n", "")
+                    .replaceAll(" {2,}", " ")
+                    .replace("<div class=\"comments-comment__bookmarks\"> </div>", "")
+                    .replace("<span class=\"comments-comment__image\"><img class=\"comments-comment__img lazyload\" data-src=\"https://beta-cdn.business-online.ru/img/icons/anonimus.svg\" alt=\"\"></span>", "")
+                    .replace("<div class=\"comments-comment__avatar\"> </div>", "")
+                    .replaceAll("(<div class=\"comments-comment__rating\"> <div class=\"voting\" data-rating=\"\\d+\" data-comment-id=\"\\d+\" data-article-id=\"\\d+\">)( \\d+ )(</div> </div>)", "<div>$2</div>")
+                    .replace(" class=\"comments-comment comments-comment_bad\"", "")
                     .replace(" <div class=\"comments-comment__author\"> <span class=\"comments-comment__name\">Анонимно</span> </div>", "<b>Анонимно</b>")
 
 
