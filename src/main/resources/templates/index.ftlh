@@ -14,14 +14,12 @@
                 <#if main.photo??>
                     <img src="${main.photo}" width="350"/>
                 </#if>
-                <h5><a href="/${main.numbersOfLinks}">${main.title}</a>
-                    <span class="badge rounded-pill bg-danger">${main.comments} </span></h5>
+                <h5><a href="/${main.numbersOfLinks}">${main.title}</a> <a href="/comments"><span class="badge rounded-pill bg-danger"><b>${main.comments}</span></a></h5>
             </div>
             </#list>
             </#if>
         </div>
     </div>
-
 
 
 <#--    <h3>Горячие темы</h3>-->

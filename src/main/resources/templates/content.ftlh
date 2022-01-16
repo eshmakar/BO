@@ -30,8 +30,7 @@
             <#if content.commentsCount??>
                 <div style="text-align: center;">
                     <div class="m-2">
-                        <h4><a href="/comments"><span
-                                        class="badge rounded-pill bg-danger"><b>${content.commentsCount}</span></a></h4>
+                        <h4><a href="/comments"><span class="badge rounded-pill bg-danger"><b>${content.commentsCount}</span></a></h4>
                     </div>
                 </div>
             </#if>
