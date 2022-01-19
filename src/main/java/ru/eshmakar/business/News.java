@@ -27,7 +27,8 @@ public class News {
     String url = "https://m.business-gazeta.ru";
     String userAgent = "Mozilla/5.0 (Linux; Android 4.4.2; Nexus 4 Build/KOT49H) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.114 Mobile Safari/537.36";
     String regexForNumber = "(.*business-gazeta.ru/)(.*/\\d+)";
-    String regexFindPhoto = "(.*)(https://.*\\.jp.?g)(.*)";
+    //    String regexFindPhoto = "(.*)(https://.*\\.jp.?g)(.*)";
+    String regexFindPhoto = "(.*)(https://.*\\.jp.?g)(\".*)";
     String replaceTo = "$2";
 
     @Autowired
@@ -46,7 +47,7 @@ public class News {
         Document document = Jsoup.connect(url).userAgent(userAgent).get();
         String glavnayaTema = "h2.article-news__title";
         String comments = "div.article-news__comments";
-        String linkGlavnaya = document.selectXpath("/html/body/div[1]/article/div/p/a").toString();
+        String linkGlavnaya = document.selectXpath("//*[@id=\"article536569\"]/div/h2/a").toString();
         String selectPhoto = "a.article-news__image";
 
         mainNews.setPhoto(Objects.requireNonNull(document.selectFirst(selectPhoto)).toString().replaceFirst(regexFindPhoto, replaceTo));
@@ -73,11 +74,10 @@ public class News {
         while (elementListIterator.hasNext() && commentsIterator.hasNext() && photosIterator.hasNext()) {
             HotNews hotNews = new HotNews();
             count++;
-            String linkHotNews = document.selectXpath("/html/body/div[1]/section/ul[1]/li[" + count + "]/div/div/a[1]").toString();
+            String linkHotNews = document.selectXpath("/html/body/div[3]/section/ul[1]/li[" + count + "]/div/div/a[1]").toString();
             hotNews.setPhoto(photosIterator.next().toString().replaceFirst(regexFindPhoto, replaceTo));
             hotNews.setTitle(elementListIterator.next().text());
             hotNews.setComments(commentsIterator.next().text());
-
 
             hotNews.setLink(url + linkHotNews.substring(9, 21));
             hotNews.setNumbersOfLinks(hotNews.getLink().replaceFirst(regexForNumber, replaceTo).replace("/", "_"));
@@ -100,7 +100,7 @@ public class News {
         while (times.hasNext() && titles.hasNext() && comments.hasNext()) {
             LastNews lastNews = new LastNews();
             count++;
-            String links = document.selectXpath("/html/body/div[1]/section/ul[2]/li[" + count + "]/div/a[1]").toString();
+            String links = document.selectXpath("/html/body/div[3]/section/ul[2]/li["+count+"]/div/a[1]").toString();
 
             lastNews.setTime(times.next().text());
             lastNews.setTitle(titles.next().text());
@@ -139,8 +139,10 @@ public class News {
         if (doc != null) {
             for (Element element : doc.select("p")) {
                 if (element != null) {
+//                    System.out.println(element);
                     if (element.toString().contains("jpg") || element.toString().contains("jpeg")) {
                         String photo = element.toString().replaceAll("\n", "").replaceAll(regexFindPhoto, replaceTo);
+                        System.out.println(photo);
                         telo.add(photo);
                     }
 

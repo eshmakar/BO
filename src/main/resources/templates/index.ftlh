@@ -51,7 +51,8 @@
                 <div class="card my-3">
                     <div class="m-2">
                         <#--                    кол-во комментов красным цветом-->
-                        <b>${last.time}</b> <a href="/${last.numbersOfLinks}">${last.title}</a>
+                        <b>${last.time}</b>
+                        <a href="/${last.numbersOfLinks}">${last.title}</a>
                         <span class="badge rounded-pill bg-danger">${last.comments}</span>
                     </div>
                 </div>

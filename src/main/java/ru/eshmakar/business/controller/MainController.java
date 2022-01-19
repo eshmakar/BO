@@ -24,19 +24,32 @@ import java.util.List;
 public class MainController {
     @Autowired
     public News news;
-
     @Autowired
     private MainNewsRepo mainNewsRepo;
-
     @Autowired
     private HotNewsRepo hotNewsRepo;
-
     @Autowired
     private LastNewsRepo lastNewsRepo;
-
     @Autowired
     private ContentNews contentNews;
 
+    @Scheduled(fixedDelay=60_000*5) //5 мин
+    public void doSomething() {
+        System.err.println("Запущено автообновление");
+        if (mainNewsRepo != null) {
+            mainNewsRepo.deleteAll();
+            hotNewsRepo.deleteAll();
+            lastNewsRepo.deleteAll();
+        }
+        try {
+            news.addMainNews();
+            news.addHotNews();
+            news.addLastNews();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     @GetMapping("/")
     public String getMainPage(Model model) {
@@ -67,10 +80,8 @@ public class MainController {
                 news.getContent(numbers);
             } catch (Exception e) {
                 System.err.println("Неправильный номер: " + numbers);
-//            e.printStackTrace();
             }
-
-            news.getComments(numbers);//добавил все комменты на файл
+            news.getComments(numbers);
 
             model.addAttribute("content", contentNews);
             model.addAttribute("number", numbers);
@@ -90,22 +101,5 @@ public class MainController {
     @GetMapping("comments")
     public String getHtml() {
         return "comments";
-    }
-
-    @Scheduled(fixedDelay=60_000) //60 сек
-    public void doSomething() {
-        if (mainNewsRepo != null) {
-            mainNewsRepo.deleteAll();
-            hotNewsRepo.deleteAll();
-            lastNewsRepo.deleteAll();
-        }
-        try {
-            news.addMainNews();
-            news.addHotNews();
-            news.addLastNews();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 }
