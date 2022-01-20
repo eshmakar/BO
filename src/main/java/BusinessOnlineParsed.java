@@ -38,10 +38,10 @@ public class BusinessOnlineParsed {
         while (times.hasNext() && lastNewsIterator.hasNext() && lastComments.hasNext()) {
             count++;
             String linkLastNews = document.selectXpath("/html/body/div[1]/section/ul[2]/li[" + count + "]/div/a[1]").toString();
-            System.out.print(times.next().text() + " ");
-            System.out.print(lastNewsIterator.next().text() + " - ");
-            System.out.print(lastComments.next().text() + " - ");
-            System.out.println(url + linkLastNews.substring(9, 21));
+//            System.out.print(times.next().text() + " ");
+//            System.out.print(lastNewsIterator.next().text() + " - ");
+//            System.out.print(lastComments.next().text() + " - ");
+//            System.out.println(url + linkLastNews.substring(9, 21));
         }
     }
 
