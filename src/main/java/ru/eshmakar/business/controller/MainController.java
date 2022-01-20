@@ -1,5 +1,7 @@
 package ru.eshmakar.business.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -22,6 +24,8 @@ import java.util.List;
 @EnableScheduling
 @Controller
 public class MainController {
+    private static long countOfReloadPages;
+
     @Autowired
     public News news;
     @Autowired
@@ -35,7 +39,6 @@ public class MainController {
 
     @Scheduled(fixedDelay=60_000*5) //5 мин
     public void doSomething() {
-        System.err.println("Запущено автообновление");
         if (mainNewsRepo != null) {
             mainNewsRepo.deleteAll();
             hotNewsRepo.deleteAll();
@@ -53,6 +56,7 @@ public class MainController {
 
     @GetMapping("/")
     public String getMainPage(Model model) {
+        countOfReloadPages++;
         Iterable<MainNews> mainNews;
         mainNews = mainNewsRepo.findAll();
 
@@ -101,5 +105,11 @@ public class MainController {
     @GetMapping("comments")
     public String getHtml() {
         return "comments";
+    }
+
+    @GetMapping("info")
+    public String info(Model model){
+        model.addAttribute("count", countOfReloadPages);
+        return "info";
     }
 }

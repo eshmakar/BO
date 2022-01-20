@@ -4,8 +4,11 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestMapping;
 import ru.eshmakar.business.domain.ContentNews;
 import ru.eshmakar.business.domain.HotNews;
 import ru.eshmakar.business.domain.LastNews;
@@ -27,7 +30,6 @@ public class News {
     String url = "https://m.business-gazeta.ru";
     String userAgent = "Mozilla/5.0 (Linux; Android 4.4.2; Nexus 4 Build/KOT49H) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.114 Mobile Safari/537.36";
     String regexForNumber = "(.*business-gazeta.ru/)(.*/\\d+)";
-    //    String regexFindPhoto = "(.*)(https://.*\\.jp.?g)(.*)";
     String regexFindPhoto = "(.*)(https://.*\\.jp.?g)(\".*)";
     String replaceTo = "$2";
 
@@ -47,8 +49,9 @@ public class News {
         Document document = Jsoup.connect(url).userAgent(userAgent).get();
         String glavnayaTema = "h2.article-news__title";
         String comments = "div.article-news__comments";
-        String linkGlavnaya = document.selectXpath("//*[@id=\"article536569\"]/div/h2/a").toString();
         String selectPhoto = "a.article-news__image";
+        String linkGlavnaya = document.selectXpath("/html/body/div[3]/article/a").toString();
+
 
         mainNews.setPhoto(Objects.requireNonNull(document.selectFirst(selectPhoto)).toString().replaceFirst(regexFindPhoto, replaceTo));
         mainNews.setTitle(Objects.requireNonNull(document.selectFirst(glavnayaTema)).text());
