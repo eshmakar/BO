@@ -5,24 +5,24 @@
         <h5>Легкая копия газеты бизнес онлайн</h5>
     </div>
 
-    <div>
-        <#--    Главная тема-->
-        <#if mainNews??>
-        <#list mainNews as main>
-        <div class="card my-3">
-            <div class="m-2">
-                <#if main.photo??>
-                    <img src="${main.photo}" width="350"/>
+        <div>
+            <#--    Главная тема-->
+            <#if mainNews??>
+            <#list mainNews as main>
+            <div class="card my-3">
+                <div class="m-2">
+                    <#if main.photo??>
+                        <img src="${main.photo}" width="350"/>
+                    </#if>
+                    <h5><a href="/${main.numbersOfLinks}">${main.title}</a> <a href="/comments"><span
+                                    class="badge rounded-pill bg-danger"><b>${main.comments}</span></a></h5>
+                </div>
+                </#list>
                 </#if>
-                <h5><a href="/${main.numbersOfLinks}">${main.title}</a> <a href="/comments"><span class="badge rounded-pill bg-danger"><b>${main.comments}</span></a></h5>
             </div>
-            </#list>
-            </#if>
         </div>
-    </div>
 
-
-<#--    <h3>Горячие темы</h3>-->
+    <#--    <h3>Горячие темы</h3>-->
     <#if hotNews??>
         <#list hotNews as hot>
             <div class="card my"> <#--размер рамки-->
@@ -50,7 +50,7 @@
             <#list lastNews as last>
                 <div class="card my-3">
                     <div class="m-2">
-                        <#--                    кол-во комментов красным цветом-->
+<#--                        кол-во комментов красным цветом&ndash;&gt;-->
                         <b>${last.time}</b>
                         <a href="/${last.numbersOfLinks}">${last.title}</a>
                         <span class="badge rounded-pill bg-danger">${last.comments}</span>

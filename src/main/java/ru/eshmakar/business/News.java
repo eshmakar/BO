@@ -103,7 +103,7 @@ public class News {
         while (times.hasNext() && titles.hasNext() && comments.hasNext()) {
             LastNews lastNews = new LastNews();
             count++;
-            String links = document.selectXpath("/html/body/div[3]/section/ul[2]/li["+count+"]/div/a[1]").toString();
+            String links = document.selectXpath("/html/body/div[3]/section/ul[2]/li[" + count + "]/div/a[1]").toString();
 
             lastNews.setTime(times.next().text());
             lastNews.setTitle(titles.next().text());
@@ -118,11 +118,11 @@ public class News {
 
     public void getContent(String urlContent) {
         String url = "https://m.business-gazeta.ru/" + urlContent.replace("_", "/");
+        String numberFromLink = urlContent.replaceAll("(.*_)(\\d+)", "$2");
 
         List<String> telo = new LinkedList<>();
         String zagol = "h1.article__h1";
         String getCommentsCount = "span.article__more-count";
-
 
         Document doc = null;
         try {
@@ -139,10 +139,10 @@ public class News {
         String findVideoIdHash = "(.*oid=)(-\\d+)(.*;id=)(\\d+)(.*)";
         String replaceVideo = "$2_$4";
 
+        int count = 0;
         if (doc != null) {
             for (Element element : doc.select("p")) {
                 if (element != null) {
-//                    System.out.println(element);
                     if (element.toString().contains("jpg") || element.toString().contains("jpeg")) {
                         String photo = element.toString().replaceAll("\n", "").replaceAll(regexFindPhoto, replaceTo);
                         System.out.println(photo);
@@ -160,6 +160,17 @@ public class News {
                     telo.add(text2);
                 }
             }
+
+            ListIterator<Element> iterator = doc.select("ul").listIterator();
+            while (iterator.hasNext()) {
+                count++;
+                String li = "//*[@id='article" + numberFromLink + "']/div[2]/div[2]/ul/li[" + count + "]";
+                String textLi = doc.selectXpath(li).text();
+                if (!textLi.isEmpty()) {
+                    telo.add("- " + textLi);
+                } else break;
+            }
+
         }
         contentNews.setTelo(telo);
     }
