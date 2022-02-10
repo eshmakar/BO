@@ -30,7 +30,8 @@ public class News {
     String url = "https://m.business-gazeta.ru";
     String userAgent = "Mozilla/5.0 (Linux; Android 4.4.2; Nexus 4 Build/KOT49H) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.114 Mobile Safari/537.36";
     String regexForNumber = "(.*business-gazeta.ru/)(.*/\\d+)";
-    String regexFindPhoto = "(.*)(https://.*\\.jp.?g)(\".*)";
+    //    String regexFindPhoto = "(.*)(https://.*\\.jp.?g)(\".*)";
+    String regexFindPhoto = "(.*)(https://.*\\.jp.?g|https://.*\\.png)(\".*)";
     String replaceTo = "$2";
 
     @Autowired
@@ -110,7 +111,6 @@ public class News {
             lastNews.setComments(Integer.valueOf(comments.next().text()));
             lastNews.setLink(url + links.substring(9, 21));
             lastNews.setNumbersOfLinks(lastNews.getLink().replaceFirst(regexForNumber, replaceTo).replace("/", "_"));
-
             lastNewsRepo.save(lastNews);
 
         }
@@ -123,11 +123,19 @@ public class News {
         List<String> telo = new LinkedList<>();
         String zagol = "h1.article__h1";
         String getCommentsCount = "span.article__more-count";
+        String getCommentsCountForMainPage = "h3.comments__h3";
+
 
         Document doc = null;
         try {
             doc = Jsoup.connect(url).get();
-            contentNews.setCommentsCount(doc.select(getCommentsCount).text());
+
+            if (!(doc.select(getCommentsCount).text().isEmpty())) {
+                contentNews.setCommentsCount(doc.select(getCommentsCount).text());
+            } else {
+                contentNews.setCommentsCount(doc.select(getCommentsCountForMainPage).text().substring(12));
+            }
+
             contentNews.setZagolovok(doc.select(zagol).text());
         } catch (IOException ignored) {
         }
@@ -143,9 +151,8 @@ public class News {
         if (doc != null) {
             for (Element element : doc.select("p")) {
                 if (element != null) {
-                    if (element.toString().contains("jpg") || element.toString().contains("jpeg")) {
+                    if (element.toString().contains("jpg") || element.toString().contains("jpeg") || element.toString().contains("png")) {
                         String photo = element.toString().replaceAll("\n", "").replaceAll(regexFindPhoto, replaceTo);
-                        System.out.println(photo);
                         telo.add(photo);
                     }
 

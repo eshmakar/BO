@@ -86,7 +86,6 @@ public class MainController {
                 System.err.println("Неправильный номер: " + numbers);
             }
             news.getComments(numbers);
-
             model.addAttribute("content", contentNews);
             model.addAttribute("number", numbers);
         }
