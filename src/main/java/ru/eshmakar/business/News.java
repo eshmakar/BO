@@ -107,6 +107,7 @@ public class News {
             String links = document.selectXpath("/html/body/div[3]/section/ul[2]/li[" + count + "]/div/a[1]").toString();
 
             lastNews.setTime(times.next().text());
+//            System.err.println(lastNews.getTime());
             lastNews.setTitle(titles.next().text());
             lastNews.setComments(Integer.valueOf(comments.next().text()));
             lastNews.setLink(url + links.substring(9, 21));
@@ -140,9 +141,6 @@ public class News {
         } catch (IOException ignored) {
         }
 
-        String toPass1 = "Подписывайтесь и читайте";
-        String toPass2 = "Регистрируясь, вы соглашаетесь";
-
         String videoLinkStart = "https://vk.com/video?z=video";
         String findVideoIdHash = "(.*oid=)(-\\d+)(.*;id=)(\\d+)(.*)";
         String replaceVideo = "$2_$4";
@@ -162,7 +160,8 @@ public class News {
                     }
 
                     String text2 = element.text();
-                    if (text2.startsWith(toPass1) || text2.startsWith(toPass2)) continue;
+
+                    if (skryvat(text2)) continue;
 
                     telo.add(text2);
                 }
@@ -180,6 +179,16 @@ public class News {
 
         }
         contentNews.setTelo(telo);
+    }
+
+    private static boolean skryvat(String text2) {
+        return text2.startsWith("Подписывайтесь и читайте") || text2.startsWith("Регистрируясь, вы соглашаетесь")
+                || text2.startsWith("Комментирование временно доступно") || text2.startsWith("Регистрация выполнена.")
+                || text2.startsWith("Мы отправили вам email с ссылкой для подтверждения, проверьте почту.")
+                || text2.startsWith("Восстановление пароля") || text2.startsWith("Мы отправили вам письмо со ссылкой для сброса пароля.")
+                || text2.startsWith("Восстановление пароля") || text2.startsWith("Что-то пошло не так.")
+                || text2.startsWith("Проверьте правильность email и повторите снова.")
+                ;
     }
 
     public void getComments(String urlContent) throws IOException {
@@ -235,3 +244,4 @@ public class News {
         }
     }
 }
+
