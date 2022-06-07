@@ -17,9 +17,8 @@
             </#list>
         </#if>
     </div>
-
-
     </div>
+    <div></div>
 
 <#--    <h3>Горячие темы</h3>-->
     <#if hotNews??>
