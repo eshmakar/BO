@@ -20,6 +20,10 @@ import ru.eshmakar.business.repo.StatistikaRepo;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
 import java.util.List;
 
 @EnableScheduling
@@ -40,93 +44,104 @@ public class MainController {
     @Autowired
     private StatistikaRepo statistikaRepo;
 
-    @Scheduled(fixedDelay = 60_000*60*24) //каждый день очищает диск Z
-    public void cleanDirectoryZeveryDay(){
-        try {FileUtils.cleanDirectory(new File("Z://"));}catch (Exception ignored){}
-    }
-
-    @Scheduled(fixedDelay=60_000*5) //5 мин
-    public void doSomething() {
-        if (mainNewsRepo != null) {
-            mainNewsRepo.deleteAll();
-            hotNewsRepo.deleteAll();
-            lastNewsRepo.deleteAll();
-        }
+    @Scheduled(fixedDelay = 60_000 * 60 * 24) //каждый день очищает диск Z и удаляет старые записи
+    public void cleanDirectoryZEveryDay() {
         try {
-            news.addMainNews();
-            news.addHotNews();
-            news.addLastNews();
-
-        } catch (IOException e) {
-            e.printStackTrace();
+            FileUtils.cleanDirectory(new File("Z://"));
+        } catch (Exception ignored) {
         }
-    }
 
-    @GetMapping("/")
-    public String getMainPage(Model model) {
-        countOfReloadPages++;
-        Iterable<MainNews> mainNews;
-        mainNews = mainNewsRepo.findAll();
-
-        Iterable<HotNews> hotNews;
-        hotNews = hotNewsRepo.findAll();
-
-        Iterable<LastNews> lastNews;
-        lastNews = lastNewsRepo.findAll();
-
-        model.addAttribute("mainNews", mainNews);
-        model.addAttribute("hotNews", hotNews);
-        model.addAttribute("lastNews", lastNews);
-        return "index";
-    }
-
-    @GetMapping(value = "/{numbers}")
-    public String getContentPage(Model model, @PathVariable String numbers) throws IOException {
-        if (!numbers.equals("favicon.ico")) {
-            contentNews.setZagolovok(null);
-            contentNews.setTelo(null);
-            contentNews.setCommentsCount(null);
-            contentNews.setId(null);
-
-            try {
-                news.getContent(numbers); //news_552764
-            } catch (Exception e) {
-                System.err.println("Неправильный номер: " + numbers);
+        statistikaRepo.findAll().forEach(e -> {
+            if ((Duration.between(e.getDate().toInstant(), new Date().toInstant()).toDays() > 7)) {
+                statistikaRepo.delete(e);
+                System.out.println("Удалил старый запись, проверка была проведена через 7 дней");
             }
+        });
+    }
 
-            String rawNumbers = numbers.replaceAll("(.*_)(\\d+)", "$2");
-            news.getComments(numbers, Integer.parseInt(rawNumbers));
 
-            model.addAttribute("content", contentNews);
-            model.addAttribute("number", numbers);
-            model.addAttribute("rawNumbers", rawNumbers);
+        @Scheduled(fixedDelay = 60_000 * 5) //каждые 5 минут обновляет главную страницу
+        public void doSomething () {
+            if (mainNewsRepo != null) {
+                mainNewsRepo.deleteAll();
+                hotNewsRepo.deleteAll();
+                lastNewsRepo.deleteAll();
+            }
+            try {
+                news.addMainNews();
+                news.addHotNews();
+                news.addLastNews();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-        return "content";
+
+        @GetMapping("/")
+        public String getMainPage (Model model){
+            countOfReloadPages++;
+            Iterable<MainNews> mainNews;
+            mainNews = mainNewsRepo.findAll();
+
+            Iterable<HotNews> hotNews;
+            hotNews = hotNewsRepo.findAll();
+
+            Iterable<LastNews> lastNews;
+            lastNews = lastNewsRepo.findAll();
+
+            model.addAttribute("mainNews", mainNews);
+            model.addAttribute("hotNews", hotNews);
+            model.addAttribute("lastNews", lastNews);
+            return "index";
+        }
+
+        @GetMapping(value = "/{numbers}")
+        public String getContentPage (Model model, @PathVariable String numbers) throws IOException {
+            if (!numbers.equals("favicon.ico")) {
+                contentNews.setZagolovok(null);
+                contentNews.setTelo(null);
+                contentNews.setCommentsCount(null);
+                contentNews.setId(null);
+
+                try {
+                    news.getContent(numbers); //news_552764
+                } catch (Exception e) {
+                    System.err.println("Неправильный номер: " + numbers);
+                }
+
+                String rawNumbers = numbers.replaceAll("(.*_)(\\d+)", "$2");
+                news.getComments(numbers, Integer.parseInt(rawNumbers));
+
+                model.addAttribute("content", contentNews);
+                model.addAttribute("number", numbers);
+                model.addAttribute("rawNumbers", rawNumbers);
+            }
+            return "content";
+        }
+
+
+        @GetMapping("top")
+        public String populars (Model model){
+            List<LastNews> lasts = lastNewsRepo.getTop30ByOrderByCommentsDesc();
+            model.addAttribute("tops", lasts);
+            return "top";
+        }
+
+
+        @GetMapping("com_{numbers}")
+        public String getHtml (@PathVariable String numbers){
+            return "com_" + numbers;
+        }
+
+        @GetMapping("info")
+        public String info (Model model){
+            model.addAttribute("count", countOfReloadPages);
+            return "info";
+        }
+
+        @GetMapping("last")
+        public String lastSeenPages (Model model){
+            model.addAttribute("stat", statistikaRepo.getTop300ByOrderByDateDesc());
+            return "last";
+        }
     }
-
-
-    @GetMapping("top")
-    public String populars(Model model) {
-        List<LastNews> lasts = lastNewsRepo.getTop30ByOrderByCommentsDesc();
-        model.addAttribute("tops", lasts);
-        return "top";
-    }
-
-
-    @GetMapping("com_{numbers}")
-    public String getHtml(@PathVariable String numbers) {
-        return "com_"+numbers;
-    }
-
-    @GetMapping("info")
-    public String info(Model model){
-        model.addAttribute("count", countOfReloadPages);
-        return "info";
-    }
-
-    @GetMapping("last")
-    public String lastSeenPages(Model model){
-        model.addAttribute("stat", statistikaRepo.getTop100ByOrderByDateDesc());
-        return "last";
-    }
-}

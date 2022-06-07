@@ -3,8 +3,8 @@ package ru.eshmakar.business.repo;
 import org.springframework.data.repository.CrudRepository;
 import ru.eshmakar.business.domain.Statistika;
 
-import java.util.LinkedList;
+import java.util.List;
 
 public interface StatistikaRepo extends CrudRepository<Statistika, Long> {
-    LinkedList<Statistika> getTop100ByOrderByDateDesc();
+    List<Statistika> getTop300ByOrderByDateDesc();
 }
