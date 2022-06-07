@@ -4,26 +4,20 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.RequestMapping;
-import ru.eshmakar.business.domain.ContentNews;
-import ru.eshmakar.business.domain.HotNews;
-import ru.eshmakar.business.domain.LastNews;
-import ru.eshmakar.business.domain.MainNews;
+import ru.eshmakar.business.domain.*;
 import ru.eshmakar.business.repo.HotNewsRepo;
 import ru.eshmakar.business.repo.LastNewsRepo;
 import ru.eshmakar.business.repo.MainNewsRepo;
+import ru.eshmakar.business.repo.StatistikaRepo;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Objects;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Component
 public class News {
@@ -44,6 +38,9 @@ public class News {
     private LastNewsRepo lastNewsRepo;
     @Autowired
     private ContentNews contentNews;
+
+    @Autowired
+    private StatistikaRepo statistikaRepo;
 
 
     public void addMainNews() throws IOException {
@@ -137,111 +134,142 @@ public class News {
                 contentNews.setCommentsCount(doc.select(getCommentsCountForMainPage).text().substring(12));
             }
 
-            contentNews.setZagolovok(doc.select(zagol).text());
-        } catch (IOException ignored) {
-        }
+            String zagolovok = doc.select(zagol).text();
+            contentNews.setZagolovok(zagolovok);
 
-        String videoLinkStart = "https://vk.com/video?z=video";
-        String findVideoIdHash = "(.*oid=)(-\\d+)(.*;id=)(\\d+)(.*)";
-        String replaceVideo = "$2_$4";
+            try {
+                AtomicReference<Statistika> oldPage = null;
 
-        int count = 0;
-        if (doc != null) {
-            for (Element element : doc.select("p")) {
-                if (element != null) {
-                    if (element.toString().contains("jpg") || element.toString().contains("jpeg") || element.toString().contains("png")) {
-                        String photo = element.toString().replaceAll("\n", "").replaceAll(regexFindPhoto, replaceTo);
-                        telo.add(photo);
-                    }
+                AtomicBoolean hasElement = new AtomicBoolean(false);
 
-                    if (element.toString().contains("<iframe")) {
-                        String video = element.toString().replaceAll(findVideoIdHash, replaceVideo);
-                        telo.add(videoLinkStart + video);
-                    }
-
-                    String text2 = element.text();
-
-                    if (skryvat(text2)) continue;
-
-                    telo.add(text2);
+                Iterable<Statistika> all = statistikaRepo.findAll();
+                all.forEach(e -> {
+                    if (e.getLink().equals(urlContent)) {
+                        hasElement.set(true);
+                        e.setDate(new Date());
+                        e.setCounterOfSeen(e.getCounterOfSeen() + 1);
+                        statistikaRepo.save(e);
+                    }});
+                if (!hasElement.get()){
+                        Statistika statistika = new Statistika();
+                        statistika.setTitle(zagolovok);
+                        statistika.setDate(new Date());
+                        statistika.setLink(urlContent);
+                        statistikaRepo.save(statistika);
                 }
+
+
+                }catch(Exception e){
+                    System.out.println("что-то произошло");
+                    e.printStackTrace();
+                }
+
+
+            } catch (IOException ignored) {
             }
 
-            ListIterator<Element> iterator = doc.select("ul").listIterator();
-            while (iterator.hasNext()) {
-                count++;
-                String li = "//*[@id='article" + numberFromLink + "']/div[2]/div[2]/ul/li[" + count + "]";
-                String textLi = doc.selectXpath(li).text();
-                if (!textLi.isEmpty()) {
-                    telo.add("- " + textLi);
-                } else break;
+            String videoLinkStart = "https://vk.com/video?z=video";
+            String findVideoIdHash = "(.*oid=)(-\\d+)(.*;id=)(\\d+)(.*)";
+            String replaceVideo = "$2_$4";
+
+            int count = 0;
+            if (doc != null) {
+                for (Element element : doc.select("p")) {
+                    if (element != null) {
+                        if (element.toString().contains("jpg") || element.toString().contains("jpeg") || element.toString().contains("png")) {
+                            String photo = element.toString().replaceAll("\n", "").replaceAll(regexFindPhoto, replaceTo);
+                            telo.add(photo);
+                        }
+
+                        if (element.toString().contains("<iframe")) {
+                            String video = element.toString().replaceAll(findVideoIdHash, replaceVideo);
+                            telo.add(videoLinkStart + video);
+                        }
+
+                        String text2 = element.text();
+
+                        if (skryvat(text2)) continue;
+
+                        telo.add(text2);
+                    }
+                }
+
+                ListIterator<Element> iterator = doc.select("ul").listIterator();
+                while (iterator.hasNext()) {
+                    count++;
+                    String li = "//*[@id='article" + numberFromLink + "']/div[2]/div[2]/ul/li[" + count + "]";
+                    String textLi = doc.selectXpath(li).text();
+                    if (!textLi.isEmpty()) {
+                        telo.add("- " + textLi);
+                    } else break;
+                }
+
+            }
+            contentNews.setTelo(telo);
+        }
+
+        private static boolean skryvat (String text2){
+            return text2.startsWith("Подписывайтесь и читайте") || text2.startsWith("Регистрируясь, вы соглашаетесь")
+                    || text2.startsWith("Комментирование временно доступно") || text2.startsWith("Регистрация выполнена.")
+                    || text2.startsWith("Мы отправили вам email с ссылкой для подтверждения, проверьте почту.")
+                    || text2.startsWith("Восстановление пароля") || text2.startsWith("Мы отправили вам письмо со ссылкой для сброса пароля.")
+                    || text2.startsWith("Восстановление пароля") || text2.startsWith("Что-то пошло не так.")
+                    || text2.startsWith("Проверьте правильность email и повторите снова.")
+                    ;
+        }
+
+        public void getComments (String urlContent,int rawNumbers) throws IOException {
+            String _numbers = urlContent.replace("_", "/");
+            String url = "https://m.business-gazeta.ru/" + _numbers;
+            BufferedWriter writer = new BufferedWriter(new FileWriter("Z://com_" + rawNumbers + ".ftlh"));
+
+            Document document = null;
+            try {
+                document = Jsoup.connect(url).get();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
 
-        }
-        contentNews.setTelo(telo);
-    }
+            String divs = "<div>\n</div>";
+            String popovers = " <div class=\"popover popover_favorite\"></div>";
+            String bookmarks = "<span class=\"comments-comment__image\"><img class=\"comments-comment__img lazyload\" data-src=\"/img/icons/anonimus.svg\" alt=\"\"></span>";
+            String plus = "(.*)( \\d+ )(</span></span>)";
 
-    private static boolean skryvat(String text2) {
-        return text2.startsWith("Подписывайтесь и читайте") || text2.startsWith("Регистрируясь, вы соглашаетесь")
-                || text2.startsWith("Комментирование временно доступно") || text2.startsWith("Регистрация выполнена.")
-                || text2.startsWith("Мы отправили вам email с ссылкой для подтверждения, проверьте почту.")
-                || text2.startsWith("Восстановление пароля") || text2.startsWith("Мы отправили вам письмо со ссылкой для сброса пароля.")
-                || text2.startsWith("Восстановление пароля") || text2.startsWith("Что-то пошло не так.")
-                || text2.startsWith("Проверьте правильность email и повторите снова.")
-                ;
-    }
+            if (document != null) {
+                Elements selects = document.select("ul.comments-list");
+                for (Element element : selects) {
+                    element.select("a").remove();
+                    element.select("div.popover__wrap").remove();
+                    element.select("div.comments-comment__etc").remove();
+                    element.select("div.show_full").remove();
+                }
 
-    public void getComments(String urlContent) throws IOException {
-        String url = "https://m.business-gazeta.ru/" + urlContent.replace("_", "/");
-        BufferedWriter writer = new BufferedWriter(new FileWriter("Z://comments.ftlh"));
+                writer.write("<#import \"parts/common.ftlh\" as c>\n" +
+                        "<@c.page>");
 
-        Document document = null;
-        try {
-            document = Jsoup.connect(url).get();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+                writer.write(selects.html()
+                        .replace(divs, "")
+                        .replace(popovers, "")
+                        .replace(bookmarks, "")
+                        .replaceAll(plus, "$2")
+                        .replace("\n", "")
+                        .replaceAll(" {2,}", " ")
+                        .replace("<div class=\"comments-comment__bookmarks\"> </div>", "")
+                        .replace("<span class=\"comments-comment__image\"><img class=\"comments-comment__img lazyload\" data-src=\"https://beta-cdn.business-online.ru/img/icons/anonimus.svg\" alt=\"\"></span>", "")
+                        .replace("<div class=\"comments-comment__avatar\"> </div>", "")
+                        .replaceAll("(<div class=\"comments-comment__rating\"> <div class=\"voting\" data-rating=\"\\d+\" data-comment-id=\"\\d+\" data-article-id=\"\\d+\">)( \\d+ )(</div> </div>)", "<div>$2</div>")
+                        .replace(" class=\"comments-comment comments-comment_bad\"", "")
+                        .replace(" <div class=\"comments-comment__author\"> <span class=\"comments-comment__name\">Анонимно</span> </div>", "<b>Анонимно</b>")
 
-        String divs = "<div>\n</div>";
-        String popovers = " <div class=\"popover popover_favorite\"></div>";
-        String bookmarks = "<span class=\"comments-comment__image\"><img class=\"comments-comment__img lazyload\" data-src=\"/img/icons/anonimus.svg\" alt=\"\"></span>";
-        String plus = "(.*)( \\d+ )(</span></span>)";
 
-        if (document != null) {
-            Elements selects = document.select("ul.comments-list");
-            for (Element element : selects) {
-                element.select("a").remove();
-                element.select("div.popover__wrap").remove();
-                element.select("div.comments-comment__etc").remove();
-                element.select("div.show_full").remove();
+                );
+
+                writer.write("</@c.page>");
+                writer.close();
+
+            } else {
+                System.out.println("document is null");
             }
-
-            writer.write("<#import \"parts/common.ftlh\" as c>\n" +
-                    "<@c.page>");
-
-            writer.write(selects.html()
-                    .replace(divs, "")
-                    .replace(popovers, "")
-                    .replace(bookmarks, "")
-                    .replaceAll(plus, "$2")
-                    .replace("\n", "")
-                    .replaceAll(" {2,}", " ")
-                    .replace("<div class=\"comments-comment__bookmarks\"> </div>", "")
-                    .replace("<span class=\"comments-comment__image\"><img class=\"comments-comment__img lazyload\" data-src=\"https://beta-cdn.business-online.ru/img/icons/anonimus.svg\" alt=\"\"></span>", "")
-                    .replace("<div class=\"comments-comment__avatar\"> </div>", "")
-                    .replaceAll("(<div class=\"comments-comment__rating\"> <div class=\"voting\" data-rating=\"\\d+\" data-comment-id=\"\\d+\" data-article-id=\"\\d+\">)( \\d+ )(</div> </div>)", "<div>$2</div>")
-                    .replace(" class=\"comments-comment comments-comment_bad\"", "")
-                    .replace(" <div class=\"comments-comment__author\"> <span class=\"comments-comment__name\">Анонимно</span> </div>", "<b>Анонимно</b>")
-
-
-            );
-
-            writer.write("</@c.page>");
-            writer.close();
-
-        } else {
-            System.out.println("document is null");
         }
     }
-}
 
