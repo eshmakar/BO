@@ -15,6 +15,8 @@ import ru.eshmakar.business.repo.StatistikaRepo;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -221,7 +223,7 @@ public class News {
         public void getComments (String urlContent,int rawNumbers) throws IOException {
             String _numbers = urlContent.replace("_", "/");
             String url = "https://m.business-gazeta.ru/" + _numbers;
-            BufferedWriter writer = new BufferedWriter(new FileWriter("Z://com_" + rawNumbers + ".ftlh"));
+            BufferedWriter writer = new BufferedWriter(new FileWriter("home/BO/com_" + rawNumbers + ".ftlh", StandardCharsets.UTF_8));
 
             Document document = null;
             try {

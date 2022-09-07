@@ -13,9 +13,11 @@
                 <#list content.telo as t>
                     <br>
                     <#if t?starts_with("https://stcdn")>
-                        <div style="text-align: center"><img src="${t}" class="img-fluid" alt="Responsive image">
+<#--                        <div style="text-align: center"><img src="${t}" class="img-fluid" alt="Responsive image">-->
+                        <div><img src="${t}" class="img-fluid" alt="Responsive image">
                     <#elseif t?starts_with("https://vk.com")>
-                        <div style="text-align: center;"><a class="navbar-brand" href="${t}"><img src="https://mnogo-golosov.ru/wp-content/uploads/2018/11/47.jpg" alt=""height="80"></a></div>
+<#--                        <div style="text-align: center;"><a class="navbar-brand" href="${t}"><img src="https://mnogo-golosov.ru/wp-content/uploads/2018/11/47.jpg" alt=""height="80"></a></div>-->
+                        <div><a class="navbar-brand" href="${t}"><img src="https://mnogo-golosov.ru/wp-content/uploads/2018/11/47.jpg" alt=""height="80"></a></div>
                     <#else>
                         <span>${t}</span><br>
                     </#if>
