@@ -136,7 +136,7 @@ public class MainController {
 
 
     @CrossOrigin
-    @GetMapping("top")
+    @GetMapping("/top")
     public String populars(Model model) {
         List<LastNews> lasts = lastNewsRepo.getTop30ByOrderByCommentsDesc();
         model.addAttribute("tops", lasts);
@@ -145,24 +145,29 @@ public class MainController {
 
 
     @CrossOrigin
-    @GetMapping("com_{numbers}")
+    @GetMapping("/com_{numbers}")
     public String getHtml(@PathVariable String numbers) {
         return "com_" + numbers;
     }
 
     @CrossOrigin
-    @GetMapping("info")
+    @GetMapping("/info")
     public String info(Model model) {
         model.addAttribute("count", countOfReloadPages);
         return "info";
     }
 
     @CrossOrigin
-    @GetMapping("last")
+    @GetMapping("/last")
     public String lastSeenPages(Model model) {
         model.addAttribute("stat", statistikaRepo.getTop300ByOrderByDateDesc());
         return "last";
     }
 
+    @CrossOrigin
+    @GetMapping("/robots.txt")
+    public String getRobots() {
+        return "robots";
+    }
 
 }
