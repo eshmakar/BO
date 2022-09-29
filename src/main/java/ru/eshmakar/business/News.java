@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @Component
 public class News {
     String url = "https://m.business-gazeta.ru";
+//    String url = "https://m-business--gazeta-ru.translate.goog/?_x_tr_sl=ru&_x_tr_tl=en&_x_tr_hl=ru&_x_tr_pto=wapp";
     String userAgent = "Mozilla/5.0 (Linux; Android 4.4.2; Nexus 4 Build/KOT49H) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.114 Mobile Safari/537.36";
     String regexForNumber = "(.*business-gazeta.ru/)(.*/\\d+)";
     //    String regexFindPhoto = "(.*)(https://.*\\.jp.?g)(\".*)";
@@ -60,7 +61,6 @@ public class News {
         mainNews.setNumbersOfLinks(mainNews.getLink().replaceFirst(regexForNumber, replaceTo).replace("/", "_"));
         mainNewsRepo.save(mainNews);
     }
-
 
     public void addHotNews() throws IOException {
         Document document = Jsoup.connect(url).userAgent(userAgent).get();
@@ -106,7 +106,6 @@ public class News {
             String links = document.selectXpath("/html/body/div[3]/section/ul[2]/li[" + count + "]/div/a[1]").toString();
 
             lastNews.setTime(times.next().text());
-//            System.err.println(lastNews.getTime());
             lastNews.setTitle(titles.next().text());
             lastNews.setComments(Integer.valueOf(comments.next().text()));
             lastNews.setLink(url + links.substring(9, 21));

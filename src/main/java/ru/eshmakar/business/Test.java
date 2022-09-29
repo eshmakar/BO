@@ -12,11 +12,13 @@ public class Test {
         String url = "https://m.business-gazeta.ru";
         String userAgent = "Mozilla/5.0 (Linux; Android 4.4.2; Nexus 4 Build/KOT49H) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.114 Mobile Safari/537.36";
 
-        Document document = Jsoup.connect(url).userAgent(userAgent).get();
-        String selectPhoto = "img.hot-news__img";
+        Document document = Jsoup.connect(url)
+                .proxy("31.131.67.14", 8080)
+                .userAgent(userAgent)
+                .get();
 
-        Elements select = document.select(selectPhoto);
-        System.out.println(select.eq(0));
+        System.out.println(document.title());
+
 
     }
 }

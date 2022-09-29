@@ -11,6 +11,5 @@ public class BusinessOnlineStart {
     public static void main(String[] args) {
         SpringApplication.run(BusinessOnlineStart.class, args);
 
-
     }
 }
